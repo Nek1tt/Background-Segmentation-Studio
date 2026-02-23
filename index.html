@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Segmentation Studio</title>
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!--
+    TensorFlow.js — загружаем один раз в правильном порядке.
+    tf-tflite требует, чтобы tf.js был уже в глобальном пространстве.
+  -->
+<script>
+  window.tfliteBasePath = 'assets/';
+</script>
+<script src="assets/tf.min.js"></script>
+<script src="assets/tf-tflite.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ─── Header ─────────────────────────────────────────── -->
+  <header class="header">
+    <h1>Background Segmentation Studio</h1>
+    <div class="fps-counter">
+      <span class="fps-label">FPS:&nbsp;</span>
+      <span class="fps-value">—</span>
+    </div>
+  </header>
+
+  <!-- ─── Main ───────────────────────────────────────────── -->
+  <div class="main-content">
+
+    <!-- Video + Canvas -->
+    <div class="video-section">
+
+      <div class="video-wrapper">
+        <video class="camera-feed" autoplay muted playsinline></video>
+        <div class="video-label">Camera Input</div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas class="output-canvas"></canvas>
+        <div class="video-label">Segmented Output</div>
+
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <img src="" alt="Logo" class="overlay-logo overlay-high">
+          <div class="overlay-text">
+            <div class="overlay-name"></div>
+            <div class="overlay-position"></div>
+            <div class="overlay-company  overlay-medium overlay-high"></div>
+            <div class="overlay-department overlay-medium overlay-high"></div>
+            <div class="overlay-location  overlay-medium overlay-high"></div>
+            <div class="overlay-slogan overlay-high"></div>
+            <div class="overlay-contact overlay-high">
+              <span class="overlay-email"></span>
+              <span class="overlay-telegram"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /video-section -->
+
+    <!-- Controls -->
+    <aside class="controls-panel">
+
+      <h3>Background Settings</h3>
+
+      <!-- Тип фона -->
+      <div class="control-group">
+        <label>Background Type:</label>
+        <div class="button-group">
+          <button class="bg-btn active" data-type="color">Color</button>
+          <button class="bg-btn"        data-type="blur">Blur</button>
+          <button class="bg-btn"        data-type="image">Image</button>
+          <button class="bg-btn"        data-type="custom">Custom</button>
+        </div>
+      </div>
+
+      <!-- Цвет -->
+      <div class="bg-control-section" id="color-section">
+        <label>Select Color:</label>
+        <div class="color-palette">
+          <div class="color-option active" data-color="#667eea" style="background:#667eea"></div>
+          <div class="color-option"        data-color="#f093fb" style="background:#f093fb"></div>
+          <div class="color-option"        data-color="#4facfe" style="background:#4facfe"></div>
+          <div class="color-option"        data-color="#43e97b" style="background:#43e97b"></div>
+          <div class="color-option"        data-color="#fa709a" style="background:#fa709a"></div>
+        </div>
+      </div>
+
+      <!-- Blur -->
+      <div class="bg-control-section hidden" id="blur-section">
+        <label>Blur Amount: <span id="blur-value">10</span>px</label>
+        <input type="range" id="blur-slider" min="0" max="50" value="10" class="slider">
+      </div>
+
+      <!-- Preset images -->
+      <div class="bg-control-section hidden" id="image-section">
+        <label>Preset Images:</label>
+        <div class="image-presets">
+          <div class="preset-btn" data-image="office">
+            <div class="preset-icon">🏢</div><span>Office</span>
+          </div>
+          <div class="preset-btn" data-image="library">
+            <div class="preset-icon">📚</div><span>Library</span>
+          </div>
+          <div class="preset-btn" data-image="home">
+            <div class="preset-icon">🏠</div><span>Home</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom upload -->
+      <div class="bg-control-section hidden" id="custom-section">
+        <label>Upload Custom Image:</label>
+        <input type="file" id="custom-upload" accept="image/*" class="file-input">
+        <div class="upload-info">JPG, PNG supported</div>
+      </div>
+
+      <!-- ─── Employee Info ──────────────────────────────── -->
+      <h3 class="section-divider">Employee Info</h3>
+
+      <div class="control-group">
+        <label>Privacy Level: <span id="privacy-value">Medium</span></label>
+        <input type="range" id="privacy-slider" min="0" max="2" value="1" class="slider">
+        <div class="privacy-labels">
+          <span>Low</span><span>Medium</span><span>High</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Full Name:</label>
+        <input type="text" id="emp-full_name"       class="info-input">
+        <label>Position:</label>
+        <input type="text" id="emp-position"        class="info-input">
+        <label>Company:</label>
+        <input type="text" id="emp-company"         class="info-input">
+        <label>Department:</label>
+        <input type="text" id="emp-department"      class="info-input">
+        <label>Office Location:</label>
+        <input type="text" id="emp-office_location" class="info-input">
+        <label>Email:</label>
+        <input type="text" id="emp-email"           class="info-input">
+        <label>Telegram:</label>
+        <input type="text" id="emp-telegram"        class="info-input">
+        <label>Logo URL:</label>
+        <input type="text" id="emp-logo_url"        class="info-input">
+        <label>Slogan:</label>
+        <input type="text" id="emp-slogan"          class="info-input">
+
+        <div class="color-inputs">
+          <div>
+            <label>Primary Color:</label>
+            <input type="color" id="emp-primary_color"   class="info-color-picker">
+          </div>
+          <div>
+            <label>Secondary Color:</label>
+            <input type="color" id="emp-secondary_color" class="info-color-picker">
+          </div>
+        </div>
+      </div>
+
+    </aside><!-- /controls-panel -->
+
+  </div><!-- /main-content -->
+</div><!-- /container -->
+
+<!-- Глобальный статус (загрузка, ошибки) -->
+<div id="status-message"></div>
+
+<!-- ES-модульная точка входа -->
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

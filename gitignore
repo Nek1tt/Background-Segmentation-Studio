@@ -1,0 +1,15 @@
+# Большие бинарные файлы — хранить в Git LFS или скачивать отдельно
+# segmentation_model.tflite
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Редакторы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Временные
+*.log
