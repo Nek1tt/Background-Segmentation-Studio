@@ -76,7 +76,7 @@ background_segmentator/
 
 **Вариант 1 — Python:**
 ```bash
-cd background_segmentator
+cd Background-Segmentation-Studio
 python -m http.server 8080
 ```
 
